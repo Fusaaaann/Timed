@@ -1,0 +1,191 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Stopwatch
+{% endblock %}
+
+{% block script %}
+{% if SW %}
+{# show the real SW #}
+<script>
+  /* Cloned and modified from 
+  https://medium.com/@olinations/an-accurate-vanilla-js-SW-script-56ceb5c6f45b */
+      $(document).ready( function () {
+        let interval = 0;
+        let difference;
+        let tInterval;
+        let SWList = [];
+        let SWObject = {startTime:0, stopTime:0};
+        let paused = 0;
+        let running = 0;
+        
+        
+        document.querySelector("#startSW").addEventListener("click", startSW);
+        document.querySelector("#pauseSW").addEventListener("click", pauseSW);
+        document.querySelector('#stopSW').addEventListener("click", stopSW);
+
+        var hours = Math.floor((interval % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((interval % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((interval % (1000 * 60)) / 1000);
+        hours = (hours < 10) ? "0" + hours : hours;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
+        console.log(hours + " " + minutes + " " + seconds);
+        document.querySelector("#hour").innerHTML = hours;
+        document.querySelector("#minute").innerHTML = minutes;
+        document.querySelector("#second").innerHTML = seconds;
+        
+        function startSW() {
+          if(!running){
+            {% if name %} SWObject["name"] = "{{name}}";{% endif %}
+            SWObject["startTime"] = new Date().getTime();
+            tInterval = setInterval(getShowTime, 1000);
+        // change 1 to 1000 above to run script every second instead of every millisecond. one other change will be needed in the getShowTime() function below for this to work. see comment there.   
+            if(paused)
+            {
+              document.querySelector(".fa-play").innerHTML = "";
+            }
+            paused = 0;
+            running = 1;
+          }
+        }
+        function pauseSW() 
+        {
+          if(!running){ }
+          else if (!paused) {
+            clearInterval(tInterval);
+            SWObject["stopTime"] = new Date().getTime();
+            SWList.push(SWObject);
+            document.querySelector(".fa-play").innerHTML = "Resume";
+
+            paused = 1;
+            running = 0;
+            // take this as an ended SW session
+            // append the start time and pause time as an object to list of SW session
+            
+          }
+        }
+
+        function stopSW()
+        {
+          if (running) {
+            SWObject["stopTime"] = new Date().getTime();
+            SWList.push(SWObject);
+          }
+          if (running || paused) {
+            var SWJSON = JSON.stringify(SWList);
+            console.log(SWList + " " + SWJSON);
+            document.querySelector("#SWInput").value = SWJSON;
+            document.querySelector("#SWForm").submit();
+            running = 0;
+            return true;
+          }
+        }
+
+        function getShowTime(){
+            interval += 1000;
+            var hours = Math.floor((interval % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((interval % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((interval % (1000 * 60)) / 1000);
+            hours = (hours < 10) ? "0" + hours : hours;
+            minutes = (minutes < 10) ? "0" + minutes : minutes;
+            seconds = (seconds < 10) ? "0" + seconds : seconds;
+            console.log(hours + " " + minutes + " " + seconds);
+            document.querySelector("#hour").innerHTML = hours;
+            document.querySelector("#minute").innerHTML = minutes;
+            document.querySelector("#second").innerHTML = seconds;
+            
+        }
+      });
+    
+</script>
+
+{% else %}
+{# get time interval to start SW #}
+<script>
+    $(document).ready(function () {
+        document.querySelector("#tasks").value = " ";
+        $("#tasks").on('change', function() {
+          console.log(document.querySelector("#tasks").value);
+            if (document.querySelector("#tasks").value == "868c0b0057e7182818b2d23546442b0c")
+            {
+                document.querySelector("#nameNew").hidden = false;
+                
+                document.querySelector("#nameNew").disabled = false;
+                // console.log(document.querySelector("#nameNew").hidden, "false triggered");
+            }
+            else
+            {
+                document.querySelector("#nameNew").hidden = true;
+                
+                document.querySelector("#nameNew").disabled = true;
+                // console.log(document.querySelector("#nameNew").hidden, "true triggered");
+            }
+        });
+        $("#namedSW").on("submit", function() {
+          var namedSWForm = document.querySelector("#namedSW");
+          if (!namedSWForm.querySelector("#nameNew").value) {
+            if(!namedSWForm.querySelector("#tasks").value || namedSWForm.querySelector("#tasks").value == "868c0b0057e7182818b2d23546442b0c") {return false;}
+            namedSWForm.querySelector("#nameNew").disabled = true;
+            console.log(namedSWForm.querySelector("#tasks").value);
+          }
+          else {
+            namedSWForm.querySelector("#tasks").disabled = true;
+            console.log(namedSWForm.querySelector("#nameNew").value);
+          }
+          console.log(namedSWForm);
+        });
+
+      });
+</script>
+{% endif %}
+{% endblock %}
+
+
+{% block main %}
+{% if SW %}
+{# show the real SW #}
+<h2>I am a Stopwatch. My time is <span class="interval" id="hour">00</span>:<span class="interval" id="minute">00</span>:<span class="interval" id="second">00</span></h2>
+{% if name %}<br><h3>You are doing {{name}}</h3><br>{% endif %}
+<div id="button-container">
+  <button id="startSW"><i class="fas fa-2x fa-play"></i></button>
+  <button id="stopSW"><i class="fas fa-2x fa-stop"></i></button>
+  <button id="pauseSW"><i class="fas fa-2x fa-pause"></i></button>
+  <form id="SWForm" style="display:none;" action="/stopwatch" method="POST">
+    <input type="text" id="SWInput" name="SWJSON">
+  </form>
+</div>
+{% else %}
+{# get time interval to start SW #}
+<h2>Please tell me what you want to do.</h2>
+{% if tasks %}
+<form action="/stopwatch" method="GET" id="namedSW" >
+  <div>
+    <!-- Droplist of tasks-->
+    <label for="tasks">Choose a task:</label>
+    <select id="tasks" name="task" >
+      <script>
+        console.log("{{tasks|safe|e}}");
+      </script>
+      {% for task in tasks %}
+      <option id="task_{{loop.index}}" value="{{task['description']}}">{{task["description"]}}</option>
+      {% endfor %}
+      <option value="868c0b0057e7182818b2d23546442b0c">Create a new task...</option>
+    </select>
+    <input type="text" name="task" id="nameNew" placeholder="Task Name" maxlength="80" hidden disabled>
+</div>
+    <button type="submit" id="submitName" class="btn btn-secondary btn-init" form="namedSW" >GO!</button>
+</form>
+OR <h3>START ANYWAY</h3></br>
+{% endif %}
+<form action="/stopwatch" method="GET" id="unnamedSW">
+    <input type="text" name="action" value="unnamedSW" hidden>
+    <button type="submit" id="submit" class="btn btn-secondary btn-init" form="unnamedSW" placeholder="Submit">START!</button>
+</form></br>
+
+<p id="demo"></p>
+
+{% endif %}
+
+
+{% endblock %}

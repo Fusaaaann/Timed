@@ -1,0 +1,248 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Timer
+{% endblock %}
+
+{% block script %}
+{% if interval %}
+{# show the real timer #}
+<script>
+  /* Cloned and modified from 
+  https://medium.com/@olinations/an-accurate-vanilla-js-stopwatch-script-56ceb5c6f45b */
+      $(document).ready( function () {
+        let interval = ({{ interval }});
+        let difference;
+        let tInterval;
+        let timerList = [];
+        let timerObject = {startTime:0, stopTime:0};
+        let paused = 0;
+        let running = 0;
+        
+        
+        document.querySelector("#startTimer").addEventListener("click", startTimer);
+        document.querySelector("#pauseTimer").addEventListener("click", pauseTimer);
+        document.querySelector('#stopTimer').addEventListener("click", stopTimer);
+
+        var hours = Math.floor((interval % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((interval % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((interval % (1000 * 60)) / 1000);
+        hours = (hours < 10) ? "0" + hours : hours;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
+        console.log(hours + " " + minutes + " " + seconds);
+        document.querySelector("#hour").innerHTML = hours;
+        document.querySelector("#minute").innerHTML = minutes;
+        document.querySelector("#second").innerHTML = seconds;
+        
+        function startTimer() {
+          if(!running){
+            {% if name %} timerObject["name"] = "{{name}}";{% endif %}
+            timerObject["startTime"] = new Date().getTime();
+            tInterval = setInterval(getShowTime, 1000);
+        // change 1 to 1000 above to run script every second instead of every millisecond. one other change will be needed in the getShowTime() function below for this to work. see comment there.   
+            if(paused)
+            {
+              document.querySelector("#startTimer").innerHTML = "";
+            }
+            paused = 0;
+            running = 1;
+          }
+        }
+        function pauseTimer() 
+        {
+          if(!running){ }
+          else if (!paused) {
+            clearInterval(tInterval);
+            timerObject["stopTime"] = new Date().getTime();
+            timerList.push(timerObject);
+            document.querySelector("#startTimer").innerHTML = "Resume";
+
+            paused = 1;
+            running = 0;
+            // take this as an ended timer session
+            // append the start time and pause time as an object to list of timer session
+            
+          }
+        }
+
+        function stopTimer()
+        {
+          if (running) {
+            timerObject["stopTime"] = new Date().getTime();
+            timerList.push(timerObject);
+          }
+          if (running || paused) {
+            var timerJSON = JSON.stringify(timerList);
+            console.log(timerList + " " + timerJSON);
+            document.querySelector("#timerInput").value = timerJSON;
+            document.querySelector("#timerForm").submit();
+            running = 0;
+            return true;
+          }
+        }
+
+        function getShowTime(){
+          if(!interval)
+          {
+            // the time has run out
+            // automatically stop
+            stopTimer();
+          }
+          else {
+            interval -= 1000;
+            var hours = Math.floor((interval % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((interval % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((interval % (1000 * 60)) / 1000);
+            hours = (hours < 10) ? "0" + hours : hours;
+            minutes = (minutes < 10) ? "0" + minutes : minutes;
+            seconds = (seconds < 10) ? "0" + seconds : seconds;
+            console.log(hours + " " + minutes + " " + seconds);
+            document.querySelector("#hour").innerHTML = hours;
+            document.querySelector("#minute").innerHTML = minutes;
+            document.querySelector("#second").innerHTML = seconds;
+          }
+        }
+      });
+    
+</script>
+
+{% else %}
+{# get time interval to start timer #}
+<script>
+    $(document).ready(function () {
+        $('#hour, #minute, #second').on('change', function () {
+            // console.log(document.getElementById('hour').value + ' ' + document.getElementById('minute').value + ' ' + document.getElementById('second').value);
+            if(parseInt(document.getElementById("hour").value) != 0 || parseInt(document.getElementById("minute").value) != 0 || parseInt(document.getElementById("second").value) != 0)
+            {
+                document.querySelector("#submit").disabled = false;
+            }
+            else
+            {
+                document.querySelector("#submit").disabled = true;
+            }
+        });
+        document.querySelector("#tasks").value = " ";
+        $("#tasks").on('change', function() {
+          console.log(document.querySelector("#tasks").value);
+            if (document.querySelector("#tasks").value == "4ac2af15abd85f66f4c93f852fd7808d")
+            {
+                document.querySelector("#nameNew").hidden = false;
+                document.querySelector("#minuteNew").hidden = false;
+                document.querySelector("#hourNew").hidden = false;
+                document.querySelector("#secondNew").hidden = false;
+                
+                document.querySelector("#nameNew").disabled = false;
+                document.querySelector("#minuteNew").disabled = false;
+                document.querySelector("#hourNew").disabled = false;
+                document.querySelector("#secondNew").disabled = false;
+                document.querySelector("#intervalNew").disabled = false;
+                // console.log(document.querySelector("#nameNew").hidden, "false triggered");
+            }
+            else
+            {
+                document.querySelector("#nameNew").hidden = true;
+                document.querySelector("#minuteNew").hidden = true;
+                document.querySelector("#hourNew").hidden = true;
+                document.querySelector("#secondNew").hidden = true;
+                
+                document.querySelector("#nameNew").disabled = true;
+                document.querySelector("#minuteNew").disabled = true;
+                document.querySelector("#hourNew").disabled = true;
+                document.querySelector("#secondNew").disabled = true;
+                document.querySelector("#intervalNew").disabled = true;
+                // console.log(document.querySelector("#nameNew").hidden, "true triggered");
+            }
+        });
+        $('#hourNew, #minuteNew, #secondNew').on('change', function () {
+            document.querySelector("#intervalNew").value = document.querySelector("#hourNew").value * 3600 * 1000 +
+                                                           document.querySelector("#minuteNew").value * 60 * 1000 +
+                                                           document.querySelector("#secondNew").value * 1000;
+        });
+        $("#namedTimer").on("submit", function() {
+          var namedTimerForm = document.querySelector("#namedTimer");
+          if (!namedTimerForm.querySelector("#nameNew").value) {
+            if(!namedTimerForm.querySelector("#tasks").value || namedTimerForm.querySelector("#tasks").value == "4ac2af15abd85f66f4c93f852fd7808d") {return false;}
+            namedTimerForm.querySelector("#nameNew").disabled = true;
+            namedTimerForm.querySelector("#minuteNew").disabled = true;
+            namedTimerForm.querySelector("#hourNew").disabled = true;
+            namedTimerForm.querySelector("#secondNew").disabled = true;
+            namedTimerForm.querySelector("#intervalNew").disabled = true;
+            console.log(namedTimerForm.querySelector("#tasks").value);
+          }
+          else {
+            namedTimerForm.querySelector("#tasks").disabled = true;
+            console.log(namedTimerForm.querySelector("#nameNew").value);
+          }
+          console.log(namedTimerForm);
+        });
+      });
+</script>
+{% endif %}
+{% endblock %}
+
+
+{% block main %}
+{% if interval %}
+{# show the real timer #}
+<h2>I am a timer. My time is <span class="interval" id="hour">00</span>:<span class="interval" id="minute">00</span>:<span class="interval" id="second">00</span></h2>
+{% if name %}<br><h3>You are doing {{name}}</h3><br>{% endif %}
+<div>
+  <button id="startTimer" class="fas fa-2x fa-play"></button>
+  <button id="stopTimer" class="fas fa-2x fa-stop"></button>
+  <button id="pauseTimer" class="fas fa-2x fa-pause"></button>
+  <form id="timerForm" style="display:none;" action="/timer" method="POST">
+    <input type="text" id="timerInput" name="timerJSON">
+  </form>
+</div>
+{% else %}
+{# get time interval to start timer #}
+<h2>Please tell me how long you're going to count.</h2>
+<form action="/timer" method="GET" id="unnamedTimer">
+    <div>
+        <input type="number" name="hour" id="hour" placeholder="Hour(s)" min="0" max="23" value="0" autofocus>
+        <input type="number" name="minute" id="minute" placeholder="Minute(s)" min="0" max="59"  value="0">
+        <input type="number" name="second" id="second" placeholder="Second(s)" min="0" max="59" value="0">
+    </div>
+    <button type="submit" id="submit" class="btn btn-secondary btn-init" form="unnamedTimer" placeholder="Submit" disabled>START!</button>
+</form></br>
+{% if tasks %}
+OR</br>
+<form action="/timer" method="GET" id="namedTimer" >
+  <div>
+    <!-- Droplist of tasks-->
+    <label for="tasks">Choose a task:</label>
+    <select id="tasks" name="task" >
+      <script>
+        console.log("{{tasks|safe|e}}");
+      </script>
+      {% for task in tasks %}
+      <option id="task_{{loop.index}}" value="{{task['description']}}">{{task["description"]}}</option>
+      <script>
+        var task_interval = parseInt("{{task['interval']}}");
+        var hours = Math.floor((task_interval % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((task_interval % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((task_interval % (1000 * 60)) / 1000);
+        hours = (hours < 10) ? "0" + hours : hours;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
+        document.querySelector("#task_{{loop.index}}").innerHTML = "{{task['description']}}    " + hours + ":" + minutes + ":" + seconds;
+      </script>
+      {% endfor %}
+      <option value="4ac2af15abd85f66f4c93f852fd7808d">Create a new task...</option>
+    </select>
+    <input type="text" name="task" id="nameNew" placeholder="Name of the task" maxlength="80" hidden disabled>
+    <input type="number" name="hour" id="hourNew" placeholder="Hour(s)" min="0" max="23" hidden disabled>
+    <input type="number" name="minute" id="minuteNew" placeholder="Minute(s)" min="0" max="59" hidden disabled>
+    <input type="number" name="second" id="secondNew" placeholder="Second(s)" min="0" max="59" hidden disabled>
+    <input type="number" name="interval" id="intervalNew" hidden disabled>
+</div>
+    <button type="submit" id="submitName" class="btn btn-secondary btn-init" form="namedTimer" >GO!</button>
+</form>
+{% endif %}
+<p id="demo"></p>
+
+{% endif %}
+
+
+{% endblock %}

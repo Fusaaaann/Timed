@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block main %}
+    <div>
+        <form action="/register" method="post">
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="password" placeholder="Password" id="password" type="password">
+            </div>
+            <div class="form-group">
+                <input class="form-control" onkeyup="ablesubm()" placeholder="Confirm Password" id="confirm" type="password">
+            </div>
+            <button class="btn btn-primary btn-init" id="register" type="submit" disabled>Register</button>
+            <script>
+                function ablesubm()
+                {
+                    var a = document.querySelector("#password").value;
+                    var b = document.querySelector("#confirm").value;
+                    if (!a.localeCompare(b))
+                    {
+                        document.querySelector("#register").disabled = false;
+                    }
+                    else
+                    {
+                        document.querySelector("#register").disabled = true;
+                    }
+                }
+            </script>
+        </form>
+    </div>
+{% endblock %}

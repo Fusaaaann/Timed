@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Timed
+{% endblock %}
+
+
+
+{% block script %}
+{% if records %}
+<script>
+    $(document).ready(function () {
+        // get response and parse
+        records = ({{records|safe|e}});
+        console.log(typeof records);
+        let dayCount = 0;
+        for (day of records) {
+            // Create and modify dayHolder 
+            var dayHolder = document.createElement("div");
+            dayCount++; 
+            dayHolder.id = "day" + dayCount;
+            dayHolder.classList.add("card");
+            dayHolder.classList.add("dayHolder");
+
+            var date = document.createElement("div");
+            var dt = new Date(day["date"]);
+            var gMonth = dt.getMonth();
+            switch (gMonth) {
+                case 0:
+                    gMonth = "January";
+                    break;
+                case 1:
+                    gMonth = "February";
+                    break;
+                case 2:
+                    gMonth = "March";
+                    break;
+                case 3:
+                    gMonth = "April";
+                    break;
+                case 4:
+                    gMonth = "May";
+                    break;
+                case 5:
+                    gMonth = "June";
+                    break;
+                case 6:
+                    gMonth = "July";
+                    break;
+                case 7:
+                    gMonth = "August";
+                    break;
+                case 8:
+                    gMonth = "September";
+                    break;
+                case 9:
+                    gMonth = "October";
+                    break;
+                case 10:
+                    gMonth = "November";
+                    break;
+                case 11:
+                    gMonth = "December";
+                    break;
+
+            }
+            console.log(typeof day, day,typeof day["date"], typeof day["tasks"]);
+            date.innerHTML = dt.getDate() + "," + gMonth;
+            var taskHolder = document.createElement("div");
+            date.classList.add("card-header");
+            date.classList.add("date");
+            taskHolder.classList.add("card-body");
+            taskHolder.classList.add("taskHolder");
+            document.querySelector("#date-label").appendChild(date);
+            dayHolder.appendChild(taskHolder);
+            let taskCount = 0;  
+            for (task of day["tasks"]) {
+                taskCount++;
+                var taskDiv = document.createElement("div");
+                taskDiv.id = "task" + taskCount;
+                taskDiv.classList.add("taskDiv");
+
+
+                // console.log(task, task["name"], typeof task["name"],  task["start"], typeof task["start"], task["stop"], typeof task["stop"]);
+                // Convert start time and stop time to readable format
+                var start = new Date(task["start"]);
+                var hours = (start.getHours() < 10) ? "0" + start.getHours() : start.getHours();
+                var minutes = (start.getMinutes() < 10) ? "0" + start.getMinutes() : start.getMinutes();
+                var seconds = (start.getSeconds() < 10) ? "0" + start.getSeconds() : start.getSeconds();
+                var startString = hours + ":" + minutes + ":" + seconds;
+                var stop = new Date(task["stop"]);
+                hours = (stop.getHours() < 10) ? "0" + stop.getHours() : stop.getHours();
+                minutes = (stop.getMinutes() < 10) ? "0" + stop.getMinutes() : stop.getMinutes();
+                seconds = (stop.getSeconds() < 10) ? "0" + stop.getSeconds() : stop.getSeconds();
+                var stopString = hours + ":" + minutes + ":" + seconds;
+                taskDiv.innerHTML = "You have done <span class='bolder'>" + task["name"] + "</span> from <span class='bold'>" + startString + "</span> to <span class='bold'>" + stopString;
+                taskHolder.appendChild(taskDiv);
+            }
+            document.querySelector("#task-container").appendChild(dayHolder);
+            document.querySelector("#date-label").style.gridTemplateColumns = "repeat(" + dayCount + ", 1fr)";
+            document.querySelector("#task-container").style.gridTemplateColumns = "repeat(" + dayCount + ", 1fr)";
+        }
+    });
+// </script>
+{% endif %}
+{% endblock %}
+
+
+
+{% block main %}
+<style>
+    #container
+    {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    #timetable-container
+    {
+        display: flex;
+        flex-direction: column;
+        margin: 0 auto;
+        padding: 0px;
+        
+    }
+    
+    #date-label
+    {
+        display: grid;
+        column-gap: 2px;
+    }
+    #task-container
+    {
+        display: grid;
+        column-gap: 2px;
+        grid-template-columns: auto;
+    }
+    .date
+    {
+        border: 0.5px solid #000000;
+        background-color: #7386D5;
+        font-weight: bold;
+        color: #ffffff;
+    }
+    .dayHolder
+    {
+        display: grid;
+        grid-template-columns: auto;
+        border: 0.5px solid #000000;
+    }
+    .taskDiv:hover{
+        border: 0.5px solid #000000;
+
+    }
+    .bolder
+    {
+        font-weight: bolder;
+    }
+    .bold
+    {
+        font-weight: bold;
+    }
+</style>
+<h1>Records of <span class="bold">{{username}}</span></h1>
+<div id="container">
+    <div id="timetable-container" class="col-md-6">
+        <div id="date-label"></div>
+        <div id="task-container"></div>
+</div>
+</div>
+
+{% endblock %}
